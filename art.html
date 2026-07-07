@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Articles | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="kicker">Community Knowledge</p>
+      <h1>Write and Share Health Articles</h1>
+      <p>Publish articles by department and explore all published content from a dedicated read page.</p>
+      <p>
+        <a class="btn" href="read_article.html">Read Articles by Category</a>
+      </p>
+      <div id="articleFeedback" class="feedback" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+      <h2>Publish a New Article</h2>
+      <form id="articleForm" novalidate>
+        <div class="form-group">
+          <label for="articleTitle">Title</label>
+          <input id="articleTitle" type="text" required>
+        </div>
+        <div class="form-group">
+          <label for="articleContent">Content</label>
+          <textarea id="articleContent" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="articleCategory">Department</label>
+          <select id="articleCategory" required>
+            <option value="">Loading categories...</option>
+          </select>
+        </div>
+        <button class="btn" type="submit">Publish Article</button>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+      <h2>Your Recent Articles</h2>
+      <div class="grid grid-3" id="articleList">
+        <article class="card">
+          <h3>Loading...</h3>
+          <p class="helper">Fetching your published articles.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> MedConnect</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const articleList = document.getElementById("articleList");
+    const articleForm = document.getElementById("articleForm");
+    const articleTitle = document.getElementById("articleTitle");
+    const articleContent = document.getElementById("articleContent");
+    const articleCategory = document.getElementById("articleCategory");
+    const categoryMap = {};
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderArticles(articles) {
+      if (!articles.length) {
+        articleList.innerHTML = '<article class="card"><h3>No personal articles yet</h3><p class="helper">Publish your first article above.</p></article>';
+        return;
+      }
+
+      articleList.innerHTML = articles
+        .map(function (item) {
+          return '<article class="card"><h3>' +
+            escapeHtml(item.title) +
+            '</h3><p class="helper">' +
+            escapeHtml(item.content) +
+            '</p><p class="helper">Department: ' +
+            escapeHtml(categoryMap[item.category] || item.category || "general") +
+            '</p><p class="helper">By ' + escapeHtml(item.author) +
+            "</p></article>";
+        })
+        .join("");
+    }
+
+    async function loadCategories() {
+      try {
+        const data = await AppApi.request("/article-categories");
+        articleCategory.innerHTML = '<option value="">Select department</option>';
+        data.categories.forEach(function (item) {
+          categoryMap[item.id] = item.name;
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.name;
+          articleCategory.appendChild(option);
+        });
+      } catch (_error) {
+        articleCategory.innerHTML = '<option value="">Select department</option>';
+      }
+    }
+
+    async function loadArticles() {
+      try {
+        const data = await AppApi.request("/articles");
+        const user = AppApi.getUser();
+        const fullName = user ? (user.firstName + " " + user.lastName).trim() : "";
+        const myArticles = fullName
+          ? data.articles.filter(function (item) { return item.author === fullName; })
+          : [];
+        renderArticles(myArticles);
+      } catch (error) {
+        articleList.innerHTML = '<article class="card"><h3>Unable to load</h3><p class="helper">' + error.message + "</p></article>";
+      }
+    }
+
+    articleForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const title = articleTitle.value.trim();
+      const content = articleContent.value.trim();
+      const category = articleCategory.value;
+      if (!title || !content || !category) {
+        showFeedback("articleFeedback", "error", "Please provide title, content, and department.");
+        return;
+      }
+
+      try {
+        await AppApi.request("/articles", {
+          method: "POST",
+          body: JSON.stringify({ title, content, category })
+        });
+        showFeedback("articleFeedback", "success", "Article published.");
+        articleForm.reset();
+        await loadArticles();
+      } catch (error) {
+        showFeedback("articleFeedback", "error", error.message + " Please login first.");
+      }
+    });
+
+    async function init() {
+      await loadCategories();
+      await loadArticles();
+    }
+
+    init();
+  </script>
+</body>
+</html>

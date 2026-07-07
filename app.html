@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" style="max-width: 680px; margin: 0 auto;">
+      <p class="kicker">Appointment Desk</p>
+      <h1>Book an Appointment</h1>
+      <form id="appointmentForm" novalidate>
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date">Appointment Date</label>
+            <input type="date" id="date" required>
+          </div>
+          <div class="form-group">
+            <label for="time">Appointment Time</label>
+            <input type="time" id="time" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="place">Preferred Clinic/Hospital</label>
+            <input type="text" id="place" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="specialization">Specialization</label>
+            <select id="specialization" required>
+              <option value="">Loading specializations...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="doctor">Preferred Doctor</label>
+            <select id="doctor" required>
+              <option value="">Select doctor</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" type="submit">Confirm Appointment</button>
+        <div id="appointmentFeedback" class="feedback" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> MedConnect</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const specialization = document.getElementById("specialization");
+    const doctor = document.getElementById("doctor");
+    const appointmentForm = document.getElementById("appointmentForm");
+    const nameInput = document.getElementById("name");
+    const bookingParams = new URLSearchParams(location.search);
+    document.getElementById("date").min = new Date().toISOString().split("T")[0];
+
+    async function validateSessionForBooking() {
+      const token = AppApi.getToken();
+      if (!token) {
+        showFeedback("appointmentFeedback", "error", "Please login first to book an appointment.");
+        return false;
+      }
+
+      try {
+        const data = await AppApi.request("/auth/me");
+        const user = data.user || AppApi.getUser() || {};
+        if (user.firstName || user.lastName) {
+          nameInput.value = [user.firstName || "", user.lastName || ""].join(" ").trim();
+        }
+        return true;
+      } catch (error) {
+        AppApi.clearAuth();
+        showFeedback("appointmentFeedback", "error", "Your session expired. Please login again.");
+        return false;
+      }
+    }
+
+    async function loadSpecializations() {
+      try {
+        const data = await AppApi.request("/specializations");
+        specialization.innerHTML = '<option value="">Select specialization</option>';
+        data.specializations.forEach(function (item) {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.name;
+          specialization.appendChild(option);
+        });
+        const requestedSpecialization = bookingParams.get("specialization");
+        if (requestedSpecialization && Array.from(specialization.options).some(option => option.value === requestedSpecialization)) {
+          specialization.value = requestedSpecialization;
+          await loadDoctors(requestedSpecialization, bookingParams.get("doctor"));
+        }
+      } catch (error) {
+        specialization.innerHTML = '<option value="">Select specialization</option>';
+        showFeedback("appointmentFeedback", "error", "Could not load specializations. Start backend server.");
+      }
+    }
+
+    async function loadDoctors(selected, requestedDoctor) {
+      doctor.innerHTML = '<option value="">Select doctor</option>';
+      if (!selected) return;
+
+      try {
+        const data = await AppApi.request("/doctors?specialization=" + encodeURIComponent(selected));
+        data.doctors.forEach(function (doc) {
+          const option = document.createElement("option");
+          option.value = doc.name;
+          option.textContent = doc.name;
+          doctor.appendChild(option);
+        });
+        if (requestedDoctor && Array.from(doctor.options).some(option => option.value === requestedDoctor)) {
+          doctor.value = requestedDoctor;
+        }
+      } catch (error) {
+        showFeedback("appointmentFeedback", "error", error.message);
+      }
+    }
+
+    specialization.addEventListener("change", async function () {
+      await loadDoctors(specialization.value);
+    });
+
+    appointmentForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      if (!specialization.value || !doctor.value) {
+        showFeedback("appointmentFeedback", "error", "Please choose specialization and doctor.");
+        return;
+      }
+
+      try {
+        const ok = await validateSessionForBooking();
+        if (!ok) return;
+
+        const data = await AppApi.request("/appointments", {
+          method: "POST",
+          body: JSON.stringify({
+            name: document.getElementById("name").value.trim(),
+            date: document.getElementById("date").value,
+            time: document.getElementById("time").value,
+            place: document.getElementById("place").value.trim(),
+            specialization: specialization.value,
+            doctor: doctor.value
+          })
+        });
+        sessionStorage.setItem("medconnect_last_appointment", JSON.stringify(data.appointment));
+        location.href = "appointment-success.html";
+      } catch (error) {
+        if (error.status === 401) {
+          AppApi.clearAuth();
+          showFeedback("appointmentFeedback", "error", "Your session expired. Please login again.");
+          return;
+        }
+        showFeedback("appointmentFeedback", "error", error.message);
+      }
+    });
+
+    loadSpecializations();
+    validateSessionForBooking();
+  </script>
+</body>
+</html>

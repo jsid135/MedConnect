@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Specializations | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="kicker">Clinical Pathways</p>
+      <h1>Find the Right Specialist</h1>
+      <p>This guide helps you map common symptoms to the most relevant medical specialty.</p>
+    </section>
+
+    <section class="grid grid-2" style="margin-top: 1rem;">
+      <article class="card">
+        <h3>General Medicine</h3>
+        <ul class="list-clean">
+          <li>Fever, cough, headache, general checkups</li>
+          <li>Good first stop for unclear symptoms</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Cardiology</h3>
+        <ul class="list-clean">
+          <li>Chest pain, palpitations, breathlessness</li>
+          <li>Heart and blood vessel concerns</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Gastroenterology</h3>
+        <ul class="list-clean">
+          <li>Abdominal pain, nausea, bowel issues</li>
+          <li>Digestive tract and liver concerns</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Pediatrics</h3>
+        <ul class="list-clean">
+          <li>Child fever, growth, vaccination guidance</li>
+          <li>Care for infants and adolescents</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Orthopedics</h3>
+        <ul class="list-clean">
+          <li>Joint pain, fractures, back pain</li>
+          <li>Muscle, bone, and ligament conditions</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Neurology</h3>
+        <ul class="list-clean">
+          <li> Migraine, dizziness, numbness</li>
+          <li> Headache,sinus issues</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Dermatology</h3>
+        <ul class="list-clean">
+          <li>Skin and hair related issues </li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+      <p><strong>Note:</strong> This content is informational, not a substitute for medical diagnosis. For urgent symptoms, seek immediate medical care.</p>
+      <a class="btn" href="app.html">Continue to Appointment Booking</a>
+    </section>
+
+    <section class="doctor-results" id="doctorResults" hidden>
+      <p class="kicker">Available Care</p>
+      <h2 id="doctorResultsTitle">Doctors</h2>
+      <div class="grid grid-2" id="doctorGrid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> MedConnect</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const selectedSpecialization = params.get("specialization");
+    const doctorResults = document.getElementById("doctorResults");
+    const doctorGrid = document.getElementById("doctorGrid");
+
+    if (selectedSpecialization) {
+      Promise.all([
+        AppApi.request("/specializations"),
+        AppApi.request("/doctors?specialization=" + encodeURIComponent(selectedSpecialization))
+      ]).then(function (results) {
+        const specialty = results[0].specializations.find(item => item.id === selectedSpecialization);
+        document.getElementById("doctorResultsTitle").textContent = specialty
+          ? specialty.name + " Doctors"
+          : "Available Doctors";
+        doctorGrid.innerHTML = "";
+        results[1].doctors.forEach(function (doctor) {
+          const card = document.createElement("article");
+          card.className = "card doctor-card";
+          const heading = document.createElement("h3");
+          heading.textContent = doctor.name;
+          const detail = document.createElement("p");
+          detail.textContent = specialty ? specialty.name + " specialist" : "Medical specialist";
+          const book = document.createElement("a");
+          book.className = "btn";
+          book.textContent = "Book Appointment";
+          book.href = "app.html?specialization=" + encodeURIComponent(selectedSpecialization) + "&doctor=" + encodeURIComponent(doctor.name);
+          card.append(heading, detail, book);
+          doctorGrid.appendChild(card);
+        });
+        doctorResults.hidden = false;
+      }).catch(function () {
+        doctorResults.hidden = false;
+        doctorGrid.innerHTML = '<p class="feedback error" style="display:block">Doctors could not be loaded right now.</p>';
+      });
+    }
+  </script>
+</body>
+</html>

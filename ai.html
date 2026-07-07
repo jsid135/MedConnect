@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="chat-wrap">
+    <section class="chat-intro">
+      <p class="kicker">MedConnect AI</p>
+      <h1>How can I help today?</h1>
+      <p>Choose a common question or type your own below.</p>
+      <div class="prompt-chips" aria-label="Conversation starters">
+        <button type="button" class="prompt-chip" data-prompt="I have chest pain">💬 I have chest pain</button>
+        <button type="button" class="prompt-chip" data-prompt="Recommend a specialist for my symptoms">💬 Recommend a specialist</button>
+        <button type="button" class="prompt-chip" data-prompt="Give me healthy diet tips">💬 Healthy diet tips</button>
+        <button type="button" class="prompt-chip" data-prompt="What is diabetes?">💬 What is diabetes?</button>
+      </div>
+    </section>
+    <section class="chat-box" id="chatContainer" aria-live="polite">
+      <div class="message bot-message">Welcome. I can help with appointment and specialization guidance.</div>
+    </section>
+    <section class="chat-input">
+      <input type="text" id="messageInput" placeholder="Type your message..." aria-label="Message">
+      <button class="btn" id="sendButton" type="button">Send</button>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> MedConnect</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const chatContainer = document.getElementById("chatContainer");
+    const messageInput = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
+    const currentUser = AppApi.getUser();
+    const chatStorageKey = "medconnect_chat_" + (currentUser && currentUser.id ? currentUser.id : "guest");
+    const specializationMatchers = [
+      { id: "cardiology", label: "Cardiologists", pattern: /cardiolog|heart specialist/i },
+      { id: "dermatology", label: "Dermatologists", pattern: /dermatolog|skin specialist/i },
+      { id: "gastroenterology", label: "Gastroenterologists", pattern: /gastroenterolog|digestive specialist/i },
+      { id: "neurology", label: "Neurologists", pattern: /neurolog/i },
+      { id: "orthopedics", label: "Orthopedic Doctors", pattern: /orthop(a)?edic/i },
+      { id: "pediatrics", label: "Pediatricians", pattern: /pediatr/i },
+      { id: "general", label: "General Physicians", pattern: /general (medicine|physician|practitioner)/i }
+    ];
+
+    function getSavedMessages() {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(chatStorageKey) || "[]");
+        return Array.isArray(saved) ? saved : [];
+      } catch (_error) {
+        return [];
+      }
+    }
+
+    function saveMessage(text, type) {
+      const messages = getSavedMessages();
+      messages.push({ text, type });
+      sessionStorage.setItem(chatStorageKey, JSON.stringify(messages.slice(-30)));
+    }
+
+    function addMessage(text, type, shouldSave = true) {
+      const node = document.createElement("div");
+      node.className = "message " + type;
+      node.textContent = text;
+      chatContainer.appendChild(node);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      if (shouldSave) saveMessage(text, type);
+    }
+
+    function addSpecialistAction(reply) {
+      if (/emergency services|emergency department|nearest emergency|call[^.]*emergency/i.test(reply)) return;
+      const match = specializationMatchers.find(function (item) {
+        return item.pattern.test(reply);
+      });
+      if (!match) return;
+      const action = document.createElement("a");
+      action.className = "chat-action";
+      action.href = "doc.html?specialization=" + encodeURIComponent(match.id) + "#doctorResults";
+      action.textContent = "Find " + match.label + " →";
+      chatContainer.appendChild(action);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function restoreChat() {
+      const messages = getSavedMessages();
+      if (!messages.length) return;
+
+      chatContainer.innerHTML = "";
+      messages.forEach(function (message) {
+        if (!message || typeof message.text !== "string") return;
+        const type = message.type === "user-message" ? "user-message" : "bot-message";
+        addMessage(message.text, type, false);
+        if (type === "bot-message") addSpecialistAction(message.text);
+      });
+    }
+
+    async function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text || sendButton.disabled) return;
+      addMessage(text, "user-message");
+      messageInput.value = "";
+      sendButton.disabled = true;
+      sendButton.textContent = "Thinking...";
+      try {
+        const data = await AppApi.request("/chat", {
+          method: "POST",
+          body: JSON.stringify({ message: text })
+        });
+        addMessage(data.reply, "bot-message");
+        addSpecialistAction(data.reply);
+      } catch (error) {
+        const message = error.status === 401
+          ? "Please log in before using the AI assistant."
+          : error.message;
+        addMessage(message, "bot-message");
+      } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = "Send";
+        messageInput.focus();
+      }
+    }
+
+    sendButton.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") sendMessage();
+    });
+    document.querySelectorAll(".prompt-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        messageInput.value = chip.dataset.prompt;
+        sendMessage();
+      });
+    });
+    restoreChat();
+  </script>
+</body>
+</html>

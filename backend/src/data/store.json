@@ -1,0 +1,250 @@
+{
+  "users": [
+    {
+      "id": "u_demo_1",
+      "firstName": "Demo",
+      "lastName": "User",
+      "dob": "1998-01-01",
+      "place": "Chennai",
+      "email": "demo@ehealthcare.local",
+      "username": "demo",
+      "passwordHash": "$2a$10$0v30bZjiF8rQvLJkk76bNO94B74qpdA06x.YxEZGCwYHd6TfPXybO"
+    },
+    {
+      "id": "d80e69a0-8584-4bc8-bc4e-d16ec21ad1e7",
+      "firstName": "Bharath",
+      "lastName": "Gowda",
+      "dob": "2003-09-05",
+      "place": "Banglore",
+      "email": "jsidhikh@gmail.com",
+      "username": "bharth_gowda",
+      "passwordHash": "$2a$10$HaRiivZSd2iH9I4/icw0c.r/MQK.KCy/UH2CjJCStK0HTnkIMpvg6"
+    },
+    {
+      "id": "fa9c62d6-a1c1-484f-a054-804ef54559af",
+      "firstName": "abc",
+      "lastName": "xyz",
+      "dob": "2026-06-04",
+      "place": "nnilj",
+      "email": "oanha@gmail.com",
+      "username": "abcxyz",
+      "passwordHash": "$2a$10$SmrEBlkks57yI9zcMB6mFeCA7dWmwTYNGiUWBddZ.wVagcytCieWm"
+    },
+    {
+      "id": "bbe4ff41-d60a-4051-956a-33269c00f404",
+      "firstName": "anya",
+      "lastName": "s",
+      "dob": "2026-07-05",
+      "place": "tvm",
+      "email": "anya@gmail.com",
+      "username": "AnyaS",
+      "passwordHash": "$2a$10$a5MYr.AR/wJsBVJmZwQPBOHGjl/jnt6YOnknrCTx5VPq103T3GDPW"
+    }
+  ],
+  "sessions": [],
+  "specializations": [
+    {
+      "id": "general",
+      "name": "General Medicine"
+    },
+    {
+      "id": "cardiology",
+      "name": "Cardiology"
+    },
+    {
+      "id": "dermatology",
+      "name": "Dermatology"
+    },
+    {
+      "id": "gastroenterology",
+      "name": "Gastroenterology"
+    },
+    {
+      "id": "neurology",
+      "name": "Neurology"
+    },
+    {
+      "id": "orthopedics",
+      "name": "Orthopedics"
+    },
+    {
+      "id": "pediatrics",
+      "name": "Pediatrics"
+    }
+  ],
+  "doctors": [
+    {
+      "id": "d1",
+      "name": "Dr. Smith",
+      "specialization": "general"
+    },
+    {
+      "id": "d2",
+      "name": "Dr. Jones",
+      "specialization": "general"
+    },
+    {
+      "id": "d3",
+      "name": "Dr. Arun",
+      "specialization": "cardiology"
+    },
+    {
+      "id": "d4",
+      "name": "Dr. Veena",
+      "specialization": "cardiology"
+    },
+    {
+      "id": "d5",
+      "name": "Dr. Santhosh",
+      "specialization": "dermatology"
+    },
+    {
+      "id": "d6",
+      "name": "Dr. Priya",
+      "specialization": "dermatology"
+    },
+    {
+      "id": "d7",
+      "name": "Dr. Giri",
+      "specialization": "gastroenterology"
+    },
+    {
+      "id": "d8",
+      "name": "Dr. Diya",
+      "specialization": "gastroenterology"
+    },
+    {
+      "id": "d9",
+      "name": "Dr. Brian",
+      "specialization": "neurology"
+    },
+    {
+      "id": "d10",
+      "name": "Dr. Naran",
+      "specialization": "neurology"
+    },
+    {
+      "id": "d11",
+      "name": "Dr. Bosh",
+      "specialization": "orthopedics"
+    },
+    {
+      "id": "d12",
+      "name": "Dr. Jane",
+      "specialization": "orthopedics"
+    },
+    {
+      "id": "d13",
+      "name": "Dr. Cena",
+      "specialization": "pediatrics"
+    },
+    {
+      "id": "d14",
+      "name": "Dr. Illa",
+      "specialization": "pediatrics"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "acdd49e9-d6ac-45da-a25c-e3a11ccf9ef2",
+      "userId": "d80e69a0-8584-4bc8-bc4e-d16ec21ad1e7",
+      "name": "bharat gowda",
+      "date": "2026-02-23",
+      "place": "baojp",
+      "specialization": "cardiology",
+      "doctor": "Dr. Arun",
+      "createdAt": "2026-02-21T17:14:04.420Z"
+    },
+    {
+      "id": "5c5e6420-637b-4e80-81e9-1edff9ecdc81",
+      "userId": "d80e69a0-8584-4bc8-bc4e-d16ec21ad1e7",
+      "name": "Bharath Gowda",
+      "date": "2026-02-25",
+      "place": "jlhjl",
+      "specialization": "cardiology",
+      "doctor": "Dr. Veena",
+      "createdAt": "2026-02-21T17:24:26.358Z"
+    }
+  ],
+  "articles": [
+    {
+      "id": "a1",
+      "title": "Simple Daily Habits for Better Health",
+      "content": "Stay hydrated, move daily, and maintain regular sleep schedules.",
+      "author": "Care Team",
+      "createdAt": "2026-02-20T10:00:00.000Z",
+      "category": "general"
+    }
+  ],
+  "chats": [
+    {
+      "id": "537a916b-826c-48fc-8298-4c9750adb395",
+      "userId": "u_demo_1",
+      "message": "Say only: AI connection successful",
+      "response": "AI connection successful",
+      "createdAt": "2026-06-29T04:19:40.789Z"
+    },
+    {
+      "id": "de6da682-0d89-4c5e-bd07-5543637ca9c4",
+      "userId": "bbe4ff41-d60a-4051-956a-33269c00f404",
+      "message": "What is diabetes?",
+      "response": "Diabetes is a medical condition where the body has trouble regulating blood sugar levels. It occurs when the body either doesn't produce enough insulin (a hormone that helps regulate blood sugar) or can't effectively use the insulin it produces. There are two main types of diabetes: Type 1, where the body doesn't produce insulin, and Type 2, where the body is resistant to insulin. Symptoms can include increased thirst and urination, fatigue, and blurred vision. If you're concerned about diabetes, it's best to consult a primary care physician or an endocrinologist for proper evaluation and guidance. What symptoms, if any, are you experiencing that made you wonder about diabetes?",
+      "createdAt": "2026-07-01T15:58:07.528Z"
+    },
+    {
+      "id": "22baaadc-acfe-48bf-94e6-8080d635bfbb",
+      "userId": "bbe4ff41-d60a-4051-956a-33269c00f404",
+      "message": "What is diabetes?",
+      "response": "Diabetes is a condition where the body has trouble regulating blood sugar levels. It's caused by the body's inability to produce enough insulin or use it effectively. There are two main types: Type 1, where the body doesn't produce insulin, and Type 2, where the body is resistant to insulin. Symptoms can include increased thirst, urination, fatigue, and blurred vision. If you're concerned, consult a primary care physician or endocrinologist. Are you experiencing any symptoms that made you ask about diabetes?",
+      "createdAt": "2026-07-01T15:58:10.821Z"
+    },
+    {
+      "id": "44bab7c5-5d30-4708-98c7-3350ff756ee8",
+      "userId": "bbe4ff41-d60a-4051-956a-33269c00f404",
+      "message": "What is diabetes?",
+      "response": "Diabetes is a condition where the body has trouble regulating blood sugar levels due to insufficient insulin production or ineffective insulin use. There are two main types: Type 1 and Type 2. Symptoms can include increased thirst, urination, fatigue, and blurred vision. If you're concerned, it's best to consult a primary care physician or endocrinologist. Do you have a family history of diabetes or any symptoms that are worrying you?",
+      "createdAt": "2026-07-01T15:58:16.696Z"
+    },
+    {
+      "id": "ae6d8ee6-edad-4174-85fb-ac2b18fd9471",
+      "userId": "bbe4ff41-d60a-4051-956a-33269c00f404",
+      "message": "What is diabetes?",
+      "response": "Diabetes is a condition where the body can't regulate blood sugar levels. This happens when the body doesn't produce enough insulin or can't use it effectively. Symptoms include increased thirst, urination, fatigue, and blurred vision. If you're concerned, consult a primary care physician or endocrinologist. Are you looking for general information or concerned about your own health?",
+      "createdAt": "2026-07-01T15:58:21.673Z"
+    }
+  ],
+  "articleCategories": [
+    {
+      "id": "general",
+      "name": "General Medicine"
+    },
+    {
+      "id": "cardiology",
+      "name": "Cardiology"
+    },
+    {
+      "id": "dermatology",
+      "name": "Dermatology"
+    },
+    {
+      "id": "gastroenterology",
+      "name": "Gastroenterology"
+    },
+    {
+      "id": "neurology",
+      "name": "Neurology"
+    },
+    {
+      "id": "orthopedics",
+      "name": "Orthopedics"
+    },
+    {
+      "id": "pediatrics",
+      "name": "Pediatrics"
+    },
+    {
+      "id": "nutrition",
+      "name": "Nutrition"
+    }
+  ]
+}

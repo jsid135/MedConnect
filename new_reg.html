@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <main class="form-shell">
+    <section class="card">
+      <p class="kicker">Create Account</p>
+      <h1>Patient Registration</h1>
+      <form id="signupForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" required>
+          </div>
+          <div class="form-group">
+            <label for="place">City</label>
+            <input type="text" id="place" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" minlength="8" pattern="(?=.*[0-9])(?=.*[^A-Za-z0-9\s]).{8,}" aria-describedby="passwordRequirements" autocomplete="new-password" required>
+            <p class="helper password-requirements" id="passwordRequirements">Use at least 8 characters, including one number and one special character.</p>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="password-field">
+              <input type="password" id="confirmPassword" minlength="8" autocomplete="new-password" required>
+              <button class="password-toggle" id="confirmPasswordToggle" type="button" aria-label="Show confirmed password" aria-pressed="false">Show</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn" type="submit">Create Account</button>
+        <p class="helper" style="margin-top: 1rem;">Already registered? <a href="login.html">Login</a></p>
+        <div id="signupFeedback" class="feedback" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const passwordPattern = /^(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const confirmPasswordToggle = document.getElementById("confirmPasswordToggle");
+
+    confirmPasswordToggle.addEventListener("click", function () {
+      const isVisible = confirmPasswordInput.type === "text";
+      confirmPasswordInput.type = isVisible ? "password" : "text";
+      confirmPasswordToggle.textContent = isVisible ? "Show" : "Hide";
+      confirmPasswordToggle.setAttribute("aria-label", isVisible ? "Show confirmed password" : "Hide confirmed password");
+      confirmPasswordToggle.setAttribute("aria-pressed", String(!isVisible));
+    });
+
+    document.getElementById("signupForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const dob = document.getElementById("dob").value;
+      const place = document.getElementById("place").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const username = document.getElementById("username").value.trim();
+
+      if (!passwordPattern.test(password)) {
+        showFeedback("signupFeedback", "error", "Password must be at least 8 characters and include at least one number and one special character.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showFeedback("signupFeedback", "error", "Passwords do not match.");
+        return;
+      }
+
+      if (!email.includes("@")) {
+        showFeedback("signupFeedback", "error", "Please enter a valid email address.");
+        return;
+      }
+
+      try {
+        await AppApi.request("/auth/register", {
+          method: "POST",
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            dob,
+            place,
+            email,
+            username,
+            password
+          })
+        });
+        showFeedback("signupFeedback", "success", "Registration complete. Redirecting to login...");
+        setTimeout(function () {
+          window.location.href = "login.html";
+        }, 900);
+      } catch (error) {
+        showFeedback("signupFeedback", "error", error.message);
+      }
+    });
+  </script>
+</body>
+</html>

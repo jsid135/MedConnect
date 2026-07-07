@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Appointments | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="kicker">Your Care Schedule</p>
+      <h1>My Appointments</h1>
+      <p>Review your confirmed appointments and booking references.</p>
+    </section>
+    <section class="appointment-list" id="appointmentList" style="margin-top: 1.5rem;">
+      <p class="helper">Loading appointments...</p>
+    </section>
+  </main>
+
+  <footer class="site-footer"><p>&copy; <span id="currentYear"></span> MedConnect</p></footer>
+  <script src="assets/js/main.js"></script>
+  <script>
+    const appointmentList = document.getElementById("appointmentList");
+
+    function renderAppointment(appointment) {
+      const card = document.createElement("article");
+      card.className = "card";
+      const date = new Date(appointment.date + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+      card.innerHTML = '<span class="status-pill"></span><h3></h3><p class="appointment-meta"></p><p class="helper appointment-ref"></p>';
+      card.querySelector(".status-pill").textContent = appointment.status || "Confirmed";
+      card.querySelector("h3").textContent = appointment.doctor;
+      card.querySelector(".appointment-meta").textContent = date + (appointment.time ? " at " + appointment.time : "") + " · " + appointment.place;
+      card.querySelector(".appointment-ref").textContent = "Reference: " + appointment.id;
+      return card;
+    }
+
+    if (!AppApi.getToken()) {
+      appointmentList.innerHTML = '<p class="feedback error" style="display:block">Please log in to view your appointments.</p>';
+    } else {
+      AppApi.request("/appointments/me").then(function (data) {
+        appointmentList.innerHTML = "";
+        if (!data.appointments.length) {
+          appointmentList.innerHTML = '<div class="card"><p>No appointments yet.</p><a class="btn" href="app.html">Book Appointment</a></div>';
+          return;
+        }
+        data.appointments.slice().reverse().forEach(function (appointment) {
+          appointmentList.appendChild(renderAppointment(appointment));
+        });
+      }).catch(function (error) {
+        appointmentList.innerHTML = '<p class="feedback error" style="display:block"></p>';
+        appointmentList.querySelector("p").textContent = error.message;
+      });
+    }
+  </script>
+</body>
+</html>

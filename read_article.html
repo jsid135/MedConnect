@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Read Articles | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+      <a class="btn header-cta" href="art.html">Write Article</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="kicker">Knowledge Hub</p>
+      <h1>Read Articles by Department</h1>
+      <p>Choose a health department to explore focused articles, including nutrition content.</p>
+      <div style="max-width: 420px; margin: 1rem auto 0; text-align: left;">
+        <label for="readerCategory">Select Department</label>
+        <select id="readerCategory">
+          <option value="all">All Departments</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+      <h2>Available Articles</h2>
+      <p class="helper">Health topic summaries are provided by MedlinePlus, National Library of Medicine. Community articles are shown alongside them.</p>
+      <div class="grid grid-3" id="readerList">
+        <article class="card">
+          <h3>Loading...</h3>
+          <p class="helper">Fetching published articles.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> MedConnect</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    const categorySelect = document.getElementById("readerCategory");
+    const list = document.getElementById("readerList");
+    let categoryMap = { all: "All Departments" };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderArticles(articles) {
+      if (!articles.length) {
+        list.innerHTML = '<article class="card"><h3>No articles found</h3><p class="helper">Try another department or publish a new article.</p></article>';
+        return;
+      }
+
+      list.innerHTML = articles.map(function (item) {
+        const categoryLabel = categoryMap[item.category] || item.category || "General";
+        const source = item.external
+          ? "Source: " + (item.author || "MedlinePlus")
+          : "By " + (item.author || "Unknown");
+        const readMore = item.external && item.url
+          ? '<p><a class="btn" href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener noreferrer">Read on MedlinePlus</a></p>'
+          : "";
+        return '<article class="card"><h3>' +
+          escapeHtml(item.title) +
+          '</h3><p class="helper">' +
+          escapeHtml(item.content) +
+          '</p><p class="helper">Department: ' +
+          escapeHtml(categoryLabel) +
+          '</p><p class="helper">' +
+          escapeHtml(source) +
+          '</p>' + readMore + '</article>';
+      }).join("");
+    }
+
+    async function loadCategories() {
+      try {
+        const data = await AppApi.request("/article-categories");
+        data.categories.forEach(function (item) {
+          categoryMap[item.id] = item.name;
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.name;
+          categorySelect.appendChild(option);
+        });
+      } catch (_error) {
+      }
+    }
+
+    async function loadArticles() {
+      const category = categorySelect.value;
+      const query = category && category !== "all"
+        ? "?category=" + encodeURIComponent(category)
+        : "";
+
+      try {
+        const apiQuery = category && category !== "all"
+          ? "?category=" + encodeURIComponent(category)
+          : "?category=all";
+        const results = await Promise.allSettled([
+          AppApi.request("/articles" + query),
+          AppApi.request("/medical-articles" + apiQuery)
+        ]);
+        const localArticles = results[0].status === "fulfilled"
+          ? results[0].value.articles || []
+          : [];
+        const medicalArticles = results[1].status === "fulfilled"
+          ? results[1].value.articles || []
+          : [];
+
+        if (!localArticles.length && !medicalArticles.length) {
+          const error = results.find(function (result) { return result.status === "rejected"; });
+          throw error ? error.reason : new Error("No articles found.");
+        }
+
+        renderArticles(localArticles.concat(medicalArticles));
+      } catch (error) {
+        list.innerHTML = '<article class="card"><h3>Unable to load</h3><p class="helper">' + escapeHtml(error.message) + '</p></article>';
+      }
+    }
+
+    categorySelect.addEventListener("change", loadArticles);
+
+    async function init() {
+      await loadCategories();
+      await loadArticles();
+    }
+
+    init();
+  </script>
+</body>
+</html>

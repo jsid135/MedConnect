@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Confirmed | MedConnect</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="page-with-sticky-footer">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="project.html">MedConnect</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="project.html">Home</a>
+        <a href="doc.html">Specializations</a>
+        <a href="app.html">Appointments</a>
+        <a href="art.html">Articles</a>
+        <a href="contact.html">Contact</a>
+        <a href="ai.html">AI Assistant</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="confirmation-shell">
+    <section class="card confirmation-card" id="confirmationCard">
+      <div class="confirmation-icon" aria-hidden="true">✓</div>
+      <p class="kicker">Booking Complete</p>
+      <h1>Appointment Confirmed</h1>
+      <p class="helper">Your appointment details are ready.</p>
+      <dl class="appointment-summary">
+        <div><dt>Doctor</dt><dd id="summaryDoctor">—</dd></div>
+        <div><dt>Date</dt><dd id="summaryDate">—</dd></div>
+        <div><dt>Time</dt><dd id="summaryTime">—</dd></div>
+        <div><dt>Reference ID</dt><dd id="summaryReference">—</dd></div>
+      </dl>
+      <a class="btn" href="my-appointments.html">View My Appointments</a>
+    </section>
+  </main>
+
+  <footer class="site-footer"><p>&copy; <span id="currentYear"></span> MedConnect</p></footer>
+  <script src="assets/js/main.js"></script>
+  <script>
+    const rawAppointment = sessionStorage.getItem("medconnect_last_appointment");
+    if (!rawAppointment) {
+      document.getElementById("confirmationCard").innerHTML = '<h1>No recent appointment</h1><p class="helper">Book an appointment to see its confirmation here.</p><a class="btn" href="app.html">Book Appointment</a>';
+    } else {
+      const appointment = JSON.parse(rawAppointment);
+      const date = new Date(appointment.date + "T00:00:00");
+      document.getElementById("summaryDoctor").textContent = appointment.doctor;
+      document.getElementById("summaryDate").textContent = date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+      document.getElementById("summaryTime").textContent = appointment.time;
+      document.getElementById("summaryReference").textContent = appointment.id;
+    }
+  </script>
+</body>
+</html>
