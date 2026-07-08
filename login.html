@@ -21,7 +21,7 @@
           <input type="password" id="password" name="password" required>
         </div>
         <button class="btn" type="submit">Sign In</button>
-        <p class="helper" style="margin-top: 1rem;">New here? <a href="newreg.html">Create an account</a></p>
+        <p class="helper" style="margin-top: 1rem;">New here? <a href="new_reg.html">Create an account</a></p>
         <div id="loginFeedback" class="feedback" role="status" aria-live="polite"></div>
       </form>
     </section>
@@ -47,7 +47,7 @@
         AppApi.setAuth(data.token, data.user);
         showFeedback("loginFeedback", "success", "Login successful. Redirecting...");
         setTimeout(function () {
-          window.location.href = "project.html";
+          window.location.href = "home.html";
         }, 700);
       } catch (error) {
         showFeedback("loginFeedback", "error", error.message);

@@ -58,7 +58,7 @@
     footer.innerHTML = `
       <div class="footer-inner">
         <div class="footer-links">
-          <a href="project.html">Home</a>
+          <a href="home.html">Home</a>
           <a href="app.html">Appointments</a>
           <a href="art.html">Articles</a>
           <a href="contact.html">Contact</a>
@@ -78,7 +78,7 @@
     yearNode.textContent = String(new Date().getFullYear());
   }
 
-  const page = location.pathname.split("/").pop() || "project.html";
+  const page = location.pathname.split("/").pop() || "home.html";
   const activePage = page === "read_article.html" ? "art.html" : page;
   document.querySelectorAll(".site-nav a").forEach((link) => {
     const href = link.getAttribute("href");
@@ -101,7 +101,7 @@
         // Local logout should still work if the backend is unavailable.
       }
       window.AppApi.clearAuth();
-      window.location.href = "project.html";
+      window.location.href = "home.html";
     });
   }
   const headerInner = document.querySelector(".header-inner");
